@@ -1,0 +1,16 @@
+id: 29464
+name: naab
+environments:
+    production:
+        domain: my-naab.com
+        storage: my-naab-prod-storage
+        queues: false
+        scheduler: false
+        memory: 256
+        timeout: 30
+        runtime: docker
+        gateway-version: 2
+        build:
+            - 'COMPOSER_MIRROR_PATH_REPOS=1 composer install --no-dev'
+            - 'php artisan event:cache'
+            - 'npm ci && npm run prod && rm -rf node_modules'
