@@ -27,3 +27,31 @@ Route::get('blog', function () {
 
     return view('blog', compact('pages'));
 });
+
+Route::get('articles/{id}', function ($id) {
+    $paragraphs = Http::withHeaders([
+        'Notion-Version' => '2022-02-22',
+        'Authorization'  => 'Bearer ' . config('notion.api_key'),
+    ])
+        ->get("https://api.notion.com/v1/blocks/$id/children", ['page_size' => 100])
+        ->collect('results')
+//        ->dump()
+            // todo add more type supports
+        ->where('type', 'paragraph')
+        ->map(function ($paragraph) {
+            $paragraphModel = new \App\NotionModels\Paragraph();
+
+            $paragraphModel->richTexts = collect(data_get($paragraph, 'paragraph.rich_text', []))->map(function (
+                $richText
+            ) {
+                $richTextModel = new \App\NotionModels\RichText();
+                $richTextModel->plainText = $richText['plain_text'];
+
+                return $richTextModel;
+            });
+
+            return $paragraphModel;
+        });
+
+    return view('article', compact('paragraphs'));
+});

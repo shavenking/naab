@@ -8,14 +8,8 @@
     <title>Document</title>
 </head>
 <body>
-@foreach ($pages as $page)
-    <h2><a href="/articles/{{ $page['id'] }}">{{ $page['name'] }}</a></h2>
-    <p>{{ $page['description'] }}</p>
-    <ul>
-        @foreach($page['tags'] as $tag)
-            <p>{{ $tag['name'] }}</p>
-        @endforeach
-    </ul>
+@foreach ($paragraphs as $paragraph)
+    <p>{!! nl2br(htmlspecialchars($paragraph->plainText())) !!}</p>
 @endforeach
 </body>
 </html>
