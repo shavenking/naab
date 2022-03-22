@@ -29,29 +29,45 @@ Route::get('blog', function () {
 });
 
 Route::get('articles/{id}', function ($id) {
-    $paragraphs = Http::withHeaders([
+    $blocks = Http::withHeaders([
         'Notion-Version' => '2022-02-22',
         'Authorization'  => 'Bearer ' . config('notion.api_key'),
     ])
         ->get("https://api.notion.com/v1/blocks/$id/children", ['page_size' => 100])
         ->collect('results')
-//        ->dump()
-            // todo add more type supports
-        ->where('type', 'paragraph')
-        ->map(function ($paragraph) {
-            $paragraphModel = new \App\NotionModels\Paragraph();
+        ->map(function ($block) {
+            switch ($block['type']) {
+                case 'paragraph':
+                    $paragraphModel = new \App\NotionModels\Paragraph();
 
-            $paragraphModel->richTexts = collect(data_get($paragraph, 'paragraph.rich_text', []))->map(function (
-                $richText
-            ) {
-                $richTextModel = new \App\NotionModels\RichText();
-                $richTextModel->plainText = $richText['plain_text'];
+                    $paragraphModel->richTexts = collect(data_get($block, 'paragraph.rich_text', []))->map(function (
+                        $richText
+                    ) {
+                        $richTextModel = new \App\NotionModels\RichText();
+                        $richTextModel->plainText = $richText['plain_text'];
 
-                return $richTextModel;
-            });
+                        return $richTextModel;
+                    });
 
-            return $paragraphModel;
-        });
+                    return $paragraphModel;
+                case 'code':
+                    $codeModel = new \App\NotionModels\Code();
+                    $codeModel->language = data_get($block, 'code.language');
 
-    return view('article', compact('paragraphs'));
+                    $codeModel->richTexts = collect(data_get($block, 'code.rich_text', []))->map(function (
+                        $richText
+                    ) {
+                        $richTextModel = new \App\NotionModels\RichText();
+                        $richTextModel->plainText = $richText['plain_text'];
+
+                        return $richTextModel;
+                    });
+
+                    return $codeModel;
+                default:
+                    return null;
+            }
+        })->filter(fn ($block) => $block !== null);
+
+    return view('article', compact('blocks'));
 });
