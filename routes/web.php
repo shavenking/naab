@@ -52,7 +52,8 @@ Route::get('articles/{id}', function ($id) {
                     return $paragraphModel;
                 case 'code':
                     $codeModel = new \App\NotionModels\Code();
-                    $codeModel->language = \Illuminate\Support\Str::replace(' ', '', data_get($block, 'code.language', 'plaintext'));
+                    $codeModel->language = \Illuminate\Support\Str::replace(' ', '',
+                        data_get($block, 'code.language', 'plaintext'));
 
                     $codeModel->richTexts = collect(data_get($block, 'code.rich_text', []))->map(function (
                         $richText
@@ -64,10 +65,15 @@ Route::get('articles/{id}', function ($id) {
                     });
 
                     return $codeModel;
+                case 'image':
+                    $imageModel = new \App\NotionModels\Image();
+                    $imageModel->url = data_get($block, 'image.file.url');
+
+                    return $imageModel;
                 default:
                     return null;
             }
-        })->filter(fn ($block) => $block !== null);
+        })->filter(fn($block) => $block !== null);
 
     return view('article', compact('blocks'));
 });
