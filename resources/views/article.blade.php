@@ -10,13 +10,7 @@
 </head>
 <body>
 @foreach ($blocks as $block)
-    @if($block instanceof \App\NotionModels\Paragraph)
-        <p>{!! nl2br(htmlspecialchars($block->plainText())) !!}</p>
-    @elseif ($block instanceof \App\NotionModels\Code)
-        <pre>
-            <code class="language-{{ $block->language }}">{{ $block->plainText() }}</code>
-        </pre>
-    @endif
+    {!! $block->toHtml() !!}
 @endforeach
 <script src="{{ asset('js/app.js') }}"></script>
 </body>
