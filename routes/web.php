@@ -52,7 +52,7 @@ Route::get('articles/{id}', function ($id) {
                     return $paragraphModel;
                 case 'code':
                     $codeModel = new \App\NotionModels\Code();
-                    $codeModel->language = data_get($block, 'code.language');
+                    $codeModel->language = \Illuminate\Support\Str::replace(' ', '', data_get($block, 'code.language', 'plaintext'));
 
                     $codeModel->richTexts = collect(data_get($block, 'code.rich_text', []))->map(function (
                         $richText
